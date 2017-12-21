@@ -1,0 +1,305 @@
+<html>
+        <head>
+            <meta charset="utf-8">
+            <title>HelloWorld</title>
+        </head>
+
+        <script src="https://d3js.org/d3.v3.min.js" charset="urf-8"></script>
+        <!-- d3.js 用于数据的可视化 -->
+        
+        <script type="text/javascript" src="qrc:///qtwebchannel/qwebchannel.js"></script>
+         <!-- qtwebchannel 用于和qt进行通信 -->
+        
+         <body>
+            <script >
+                var nodes = [];//传入的节点信息
+                var edges = [];//传入的边信息
+                var shortestTreeEdges = [];//最小生成树的边信息
+
+                var width = 900; var height = 600;//默认的图形显示区大小
+                
+                //颜色常量
+                const gray = "#DCDCDC";//灰色
+                const skyblue = "#00BFFF";//天蓝色
+                const red = "#FF0000";//红色
+                const lightGreen = "#90EE90";//浅绿色
+                const purple = "#A020F0";//紫色
+                const black ="#000000";//黑色
+                const orange = "#FFA500";//橘黄色
+
+                //节点父亲的特殊值
+                const outsidePath = -2;//不在路径上的点的父节点
+                const pathRoot = -1;//路径起点的父节点
+
+
+                window.onload = function(){
+                        var content;
+                        new QWebChannel(qt.webChannelTransport, function(channel) 
+                        {
+                            graph = channel.objects.graph;//由webchannel传进来一个graph对象
+
+                            //--------------进行信号和槽的连接--------------------
+                            graph.adjustSize.connect(adjustSize);//调整图形显示区的大小
+                           
+                            //----数据的初始化----
+                            graph.addNode.connect(addNode);//通过addNode向js中增加节点
+                            graph.addEdge.connect(addEdge);//通过addEdge向js中增加边
+                            //----数据的初始化----
+
+                            //----最小生成树的可视化-----
+                            graph.hideTreeEdges.connect(hideTreeEdges);//隐藏最小生成树所有的边
+                            graph.showTreeEdge.connect(showTreeEdge);//显示最小生成树某条边
+                            graph.visualizeShortestTree.connect(visualizeShortestTree);//可视化最小生成树
+                            //----最小生成树的可视化-----
+
+                            //----最短路径的可视化-----
+                            graph.resetNodeType.connect(resetGraphType);//清空所有节点的类型
+                            graph.resetEdgeType.connect(resetEdgeType);//清空所有边的类型
+                            graph.resetGraphType.connect(resetGraphType);//清空所有节点和边的类型
+                            graph.setNodeType.connect(setNodeType);//设置节点的类型
+                            //节点类型划分：源点SOURCE,终点TARGET，最短路径上的其余点MIN_PATH，一般点NULL
+                            graph.setEdgeType.connect(setEdgeType);//设置边的类型
+                            //边类型划分：最短路径上的边MIN_PATH,最小生成树上的边SHORTEST_TREE,一般边NULL
+                            graph.setNodeParent.connect(setNodeParent);//设置节点的父节点
+                            graph.visualizeMinPath.connect(visualizeMinPath);//可视化最短路径
+                            //----最短路径的可视化-----
+
+                            //--------------进行信号和槽的连接--------------------                           
+                        })
+                };
+
+                function adjustSize(_width, _height){//调整图形显示区的大小
+                    width = _width; height = _height;
+                }
+                
+                //----数据的初始化----
+                function addNode(_name) {//向nodes中加入边
+                    var node = { name: _name , type : "NULL", parent: outsidePath};//类型为空,路径的父节点设置
+                    nodes.push(node);
+                }
+
+                function addEdge(_source, _target, _weight) {//向edges中加入边
+                    var edge = { source: _source, target: _target, weight: _weight, type : "NULL" };//类型为空
+                    edges.push(edge);
+                }
+                //----数据的初始化----
+
+                //----最小生成树的可视化-----
+                function hideTreeEdges(){//隐藏最小生成树的所有的边
+                    shortestTreeEdges.slice(0, shortestTreeEdges.length);
+                    //shortestTreeEdges.length = 0;
+                }
+
+                function showTreeEdge(i){//在最小生成树中加入编号为i的边
+                    shortestTreeEdges.push(edges[i]);
+                }
+
+                function visualizeShortestTree(){//显示最小生成树 
+                    var svg = d3.select("body")//选取画布
+                        .append("svg")
+                        .attr("width", width)
+                        .attr("height", height);
+
+                    var force = d3.layout.force()
+                        .nodes(nodes) //指定节点数组
+                        .links(shortestTreeEdges) //指定连线数组
+                        .size([width, height])//指定作用域范围
+                        .linkDistance(150)//指定连线长度
+                        .charge([-400]);//相互之间的作用力
+
+                    force.start();//开始作用
+
+                    //添加连线
+                    var svg_edges = svg.selectAll("line")
+                        .data(shortestTreeEdges)
+                        .enter()
+                        .append("line")
+                        .style("stroke", black)//颜色灰色
+                        .style("storke-width", 2);//粗细为1
+                    
+                    var color = d3.scale.category20();//生成一个颜色库
+
+                    //添加节点
+                    var svg_nodes = svg.selectAll("circle")
+                        .data(nodes)
+                        .enter()
+                        .append("circle")
+                        .attr("r", 2)//半径为20
+                        .style("fill", function (d, i) {
+                            return color(i);//颜色随机
+                        })
+                        .call(force.drag);//使得节点能够拖动
+
+                    //添加描述节点的文字
+                    var svg_texts = svg.selectAll("text")
+                        .data(nodes)
+                        .enter()
+                        .append("text")
+                        .style("fill", "black")//颜色为黑色
+                        .attr("dx", 20)//宽度
+                        .attr("dy", 8)//高度
+                        .text(function (d) {
+                            return d.name;//内容为节点的名字
+                        });
+
+                    force.on("tick", function () {//对于每一个时间间隔
+                        //更新连线坐标
+                    svg_edges.attr("x1", function (d) { return d.source.x; })
+                            .attr("y1", function (d) { return d.source.y; })
+                            .attr("x2", function (d) { return d.target.x; })
+                            .attr("y2", function (d) { return d.target.y; });
+                        //更新节点坐标
+                    svg_nodes.attr("cx", function (d) { return d.x; })
+                            .attr("cy", function (d) { return d.y; });
+                        //更新文字坐标
+                    svg_texts.attr("x", function (d) { return d.x; })
+                            .attr("y", function (d) { return d.y; });
+                    })
+                }
+                //----最小生成树的可视化-----
+
+                
+                //----最短路径的可视化-----
+                function resetEdgeType(){//复原所有边的类型
+                    for(var i=0; i<edges.length; i++){
+                        edges[i].type = "NULL";
+                    }
+                }
+
+                function resetNodeType(){//复原所有点的类型
+                    for(var i=0; i<nodes.length; i++){
+                        nodes[i].type = "NULL";
+                        nodes[i].parent = outsidePath;//不在最短路径上
+                    }
+                }
+
+                function resetGraphType(){//清空所有节点和边的类型
+                    resetEdgeType();
+                    resetNodeType();
+                }
+
+                function setNodeType(i, type){//设置第i个节点的类型
+                    nodes[i].type = type;
+                }
+
+                function setEdgeType(i, type){//设置第i条边的类型
+                    edges[i].type = type;
+                }
+
+                function setNodeParent(i, parent){//设置第i个节点的父节点
+                    nodes[i].parent = parent;
+                }
+
+                function isShortestPath(i){//在已知节点是否在最短路径上的条件下，判断第i条边是否在最短路径上
+                    var source = edges[i].source.index;//源点source
+                    var target = edges[i].target.index;//终点target
+                    return ( nodes[source].parent == target //若最短路径中target指向source
+                        || nodes[target].parent == source ); //或者source指向target，都返回true
+                }
+                //Note:此处有进一步改进的空间：
+                //      可以返回一个枚举值，实现可视化界面显示带有箭头的路径
+
+                function visualizeMinPath(){//可视化最短路径
+                    var svg = d3.select("body")//选取画布
+                        .append("svg")
+                        .attr("width", width)
+                        .attr("height", height);
+
+                    var force = d3.layout.force()
+                        .nodes(nodes) //指定节点数组
+                        .links(edges) //指定连线数组
+                        .size([width, height])//指定作用域范围
+                        //.linkDistance(150)//指定连线长度
+                        .charge([-400]);//相互之间的作用力
+
+                    force.start();//开始作用
+
+                    //添加连线
+                    var svg_edges = svg.selectAll("line")
+                        .data(edges)
+                        .enter()
+                        .append("line")
+
+                    svg_edges.attr("stroke", function (d, i) {//根据边类型调整边的颜色
+                        if(isShortestPath(i)){//如果是最短路径
+                                return black;//则为黑色
+                        }else{
+                            return gray;//否则为灰色
+                        }
+                    });
+
+                    svg_edges.attr("stroke-width", function (d, i) {//根据边类型调整边的粗细
+                        if (isShortestPath(i)) {//如果是最短路径
+                            return 3;//则加粗
+                        } else {
+                            return 1;
+                        }
+                    });
+
+                    //添加节点
+                    var svg_nodes = svg.selectAll("circle")
+                        .data(nodes)
+                        .enter()
+                        .append("circle")
+                        .call(force.drag);//使得节点能够拖动
+
+                    svg_nodes.attr("r", function (d, i) {//根据节点类型调整节点的大小
+                        switch(d.type){
+                            case "NULL":
+                                return 4;
+                            case "MIN_PATH":
+                                return 6;
+                            case "SOURCE":
+                            case "TARGET":
+                                return 8;
+                        }
+                    });
+
+                    svg_nodes.attr("fill",function(d, i){//根据节点类型调整节点的颜色
+                        switch(d.type){
+                            case "NULL":
+                                return lightGreen;
+                            case "MIN_PATH":
+                                return orange;
+                            case "SOURCE":
+                            case "TARGET":
+                                return purple;
+                        }
+                    })
+
+                    //添加描述节点的文字
+                    var svg_texts = svg.selectAll("text")
+                        .data(nodes)
+                        .enter()
+                        .append("text")
+                        .style("fill", "black")
+                        .attr("dx", 2)
+                        .attr("dy", 1)
+                        .text(function (d) {
+                            switch(d.type){
+                                case "SOURCE":
+                                case "TARGET":
+                                    return d.name;
+                                default:
+                                    return "";
+                            }
+                        });
+
+                    force.on("tick", function () {//对于每一个时间间隔
+                        //更新连线坐标
+                    svg_edges.attr("x1", function (d) { return d.source.x; })
+                            .attr("y1", function (d) { return d.source.y; })
+                            .attr("x2", function (d) { return d.target.x; })
+                            .attr("y2", function (d) { return d.target.y; });
+                        //更新节点坐标
+                    svg_nodes.attr("cx", function (d) { return d.x; })
+                            .attr("cy", function (d) { return d.y; });
+                        //更新文字坐标
+                    svg_texts.attr("x", function (d) { return d.x; })
+                            .attr("y", function (d) { return d.y; });
+                    })
+                }
+                //----最短路径的可视化-----
+            </script>   
+        </body>
+</html>
