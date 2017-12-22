@@ -16,7 +16,7 @@ function visualizeConnectedComponent(graph,d3) {//将图graph上的最短路径�
         .links(edges)		//指定连线数组
         .size([width,height])	//指定范围
         .linkDistance(100)	//指定连线长度
-        .charge([-6]);	//相互之间的作用力
+        .charge([-60]);	//相互之间的作用力
 
     force.start();	//开始作用
 
@@ -36,8 +36,8 @@ function visualizeConnectedComponent(graph,d3) {//将图graph上的最短路径�
         .enter()
         .append("circle")
         .attr("r", 3)
-        .style("fill",function(d,i){
-            return color(d.group);
+        .style("fill",function(d){
+            return color((d.group));
         })
         .call(force.drag);	//使得节点能够拖动
 
