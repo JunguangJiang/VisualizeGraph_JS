@@ -37,7 +37,7 @@ function visualizeConnectedComponent(graph,d3) {//将图graph上的最短路径�
         .append("circle")
         .attr("r", 3)
         .style("fill",function(d){
-            return color((d.group));
+            return color((d.group%20));
         })
         .call(force.drag);	//使得节点能够拖动
 

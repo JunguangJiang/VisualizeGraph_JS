@@ -2,8 +2,8 @@ function visualizeMinSpanTree(graph,d3) {//将图graph上的最短路径可视�
     var nodes = graph.nodes;
     var edges = graph.edges;
 
-    var width = 500;
-    var height = 500;
+    var width = 2000;
+    var height = 2000;
 
 
     var svg = d3.select("body")
@@ -16,7 +16,7 @@ function visualizeMinSpanTree(graph,d3) {//将图graph上的最短路径可视�
         .links(edges)		//指定连线数组
         .size([width,height])	//指定范围
         .linkDistance(1)	//指定连线长度
-        .charge([-1000]);	//相互之间的作用力
+        .charge([-10]);	//相互之间的作用力
 
     force.start();	//开始作用
 
@@ -25,8 +25,8 @@ function visualizeMinSpanTree(graph,d3) {//将图graph上的最短路径可视�
         .data(edges)
         .enter()
         .append("line")
-        .style("stroke", lightGreen)
-        .style("stroke-width", 2);
+        .style("stroke", gray)
+        .style("stroke-width", 1);
 
     var color = d3.scale.category20();
 
@@ -35,9 +35,15 @@ function visualizeMinSpanTree(graph,d3) {//将图graph上的最短路径可视�
         .data(nodes)
         .enter()
         .append("circle")
-        .attr("r", 3)
-        .style("fill",function(d,i){
-            return color(i);
+        .attr("r", function (d) {
+            if(d.degree > 100) return 9;
+            else if(d.degree > 10) return 6;
+            else return 2;
+        })
+        .style("fill",function(d){
+            if(d.degree > 100) return red;
+            else if(d.degree > 10) return skyBlue;
+            else return lightGreen;
         })
         .call(force.drag);	//使得节点能够拖动
 
