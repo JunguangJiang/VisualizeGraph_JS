@@ -36,6 +36,11 @@ function visualizeShortestPath(graph,d3) {//将图graph上的最短路径可视�
                 case "shortestPath": return 3;
                 default: return 1;
             }
+        })
+        .sort(function(a, b) {
+            if (a.type == "shortestPath")
+                return 1;
+                return 0;
         });
 
     //添加节点
