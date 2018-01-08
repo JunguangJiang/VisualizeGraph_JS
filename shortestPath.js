@@ -2,19 +2,21 @@ function visualizeShortestPath(graph,d3) {//将图graph上的最短路径可视�
     var nodes = graph.nodes;
     var edges = graph.edges;
 
-    var width = 1000;
-    var height = 1000;
+    var width = 600;
+    var height = 600;
 
 
     var svg = d3.select("body")
         .append("svg")
         .attr("width",width)
         .attr("height",height);
+        //.style("background", lightGreen);
 
     var force = d3.layout.force()
         .nodes(nodes)		//指定节点数组
         .links(edges)		//指定连线数组
         .size([width,height])	//指定范围
+        .gravity(0.5)           //增加重力
         .linkDistance(50)	//指定连线长度
         .charge(-20);	//相互之间的作用力
 
