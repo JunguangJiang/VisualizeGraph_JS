@@ -89,8 +89,8 @@ function visualizeShortestPath(graph,d3) {//将图graph上的最短路径可视�
             .attr("y1",function(d){ 
                 if (d.source.y < 0)
                     d.source.y = 0;
-                else if (d.source.y > width)
-                    d.source.y = width;
+                else if (d.source.y > height)
+                    d.source.y = height;
                 return d.source.y; 
             })
             .attr("x2",function(d){ 
@@ -103,8 +103,8 @@ function visualizeShortestPath(graph,d3) {//将图graph上的最短路径可视�
             .attr("y2",function(d){ 
                 if (d.target.y < 0)
                     d.target.y = 0;
-                else if (d.target.y > width)
-                    d.target.y = width;
+                else if (d.target.y > height)
+                    d.target.y = height;
                 return d.target.y; 
             })
 
@@ -119,8 +119,8 @@ function visualizeShortestPath(graph,d3) {//将图graph上的最短路径可视�
             .attr("cy",function(d){ 
                 if (d.y < 0)
                     d.y = 0;
-                else if (d.y > width)
-                    d.y = width;
+                else if (d.y > height)
+                    d.y = height;
                 return d.y; 
             })
     });
