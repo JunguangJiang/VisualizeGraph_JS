@@ -36,12 +36,12 @@ function visualizeMinSpanTree(graph,d3) {//将图graph上的最短路径可视�
         .enter()
         .append("circle")
         .attr("r", function (d) {
-            if(d.degree > 100) return 9;
-            else if(d.degree > 10) return 6;
+            if(d.degree > 100) return 5;
+            else if(d.degree > 10) return 4;
             else return 2;
         })
         .style("fill",function(d){
-            if(d.degree > 100) return red;
+            if(d.degree > 100) return orange;
             else if(d.degree > 10) return skyBlue;
             else return lightGreen;
         })

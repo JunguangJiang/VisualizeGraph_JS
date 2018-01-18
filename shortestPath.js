@@ -54,9 +54,9 @@ function visualizeShortestPath(graph,d3) {//将图graph上的最短路径可视�
             switch (d.type){
                 case "source":
                 case "target":
-                    return 8;
+                    return 4;
                 case "inpath":
-                    return 5;
+                    return 3;
                 default:
                     return 2;
 
