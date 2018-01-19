@@ -2,6 +2,7 @@ var globalinfo;
 
 function groupNumberInDifferentThreads(info,d3) {
   globalinfo = info;
+
 }
 
 function draw(info)
@@ -25,9 +26,18 @@ function draw(info)
   .domain(dataset)
   .rangeRoundBands([0, width - padding.left - padding.right]);
 
+  //找合适的y轴
+  const minheight = 1000;
+  var min = info[0].groupNumber;
+  var max = info[0].groupNumber;
+  info.forEach(element => {
+      if (element.groupNumber > max) max = element.groupNumber;
+      if (element.groupNumber < min) min = element.groupNumber;
+  });
+
   //y轴的比例尺
   var yScale = d3.scale.linear()
-  .domain([100000, 120000])
+  .domain([min - minheight, max + minheight])
   .range([height - padding.top - padding.bottom, 0]);
 
   //定义x轴
@@ -103,7 +113,7 @@ function draw(info)
 
 function addBtn()
 {
-  const threads = [3, 8, 15, 25, 35, 55, 75]
+  const threads = [3, 8, 15, 25, 35, 55, 75];
   var MyDiv =document.getElementById("buttons");
   threads.forEach(function(element, i) {
     var bt =document.createElement("button");           //createElement生成button对象
