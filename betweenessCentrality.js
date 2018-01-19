@@ -15,7 +15,7 @@ function betweenessCentrality(graph,d3) {//将图graph上的最短路径可视�
       .nodes(nodes)		//指定节点数组
       .links(edges)		//指定连线数组
       .size([width,height])	//指定范围
-      .linkDistance(1)	//指定连线长度
+      .linkDistance(100)	//指定连线长度
       .charge([-80]);	//相互之间的作用力
 
   force.start();	//开始作用
@@ -28,7 +28,6 @@ function betweenessCentrality(graph,d3) {//将图graph上的最短路径可视�
       .style("stroke", gray)
       .style("stroke-width", 1);
 
-  //映射为【0，1】
   var min = nodes[0].bCentrality;
   var max = nodes[0].bCentrality;
   nodes.forEach(element => {
@@ -37,8 +36,8 @@ function betweenessCentrality(graph,d3) {//将图graph上的最短路径可视�
   });
   var scale = d3.scale.linear()
   .domain([min, max])
-  .range([0.5, 1]);
-
+  .range([0, 1]);
+  var color = d3.scale.category10();
 
   //添加节点
   var svg_nodes = svg.selectAll("circle")
@@ -47,7 +46,7 @@ function betweenessCentrality(graph,d3) {//将图graph上的最短路径可视�
       .append("circle")
       .attr("r", "2")
       .style("fill",function(d){
-          return d3.interpolatePuBu(scale(d.bCentrality));
+          return color(scale(d.bCentrality)*10);
       })
       .sort(function(a, b) {
           return b.bCentrality - a.bCentrality;

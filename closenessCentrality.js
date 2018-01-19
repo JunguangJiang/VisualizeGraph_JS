@@ -38,7 +38,7 @@ function closenessCentrality(graph,d3) {//将图graph上的最短路径可视化
   var scale = d3.scale.linear()
   .domain([min, max])
   .range([-1, 0]);
-
+  var color = d3.scale.category10();
 
   //添加节点
   var svg_nodes = svg.selectAll("circle")
@@ -47,7 +47,7 @@ function closenessCentrality(graph,d3) {//将图graph上的最短路径可视化
       .append("circle")
       .attr("r", "2")
       .style("fill",function(d){
-          return d3.interpolateYlOrRd(-scale(d.cCentrality));
+          return color(-scale(d.cCentrality)*10);
       })
       .sort(function(a, b) {
           return b.cCentrality - a.cCentrality;
