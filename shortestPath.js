@@ -2,7 +2,7 @@ function visualizeShortestPath(graph, d3) {//将图graph上的最短路径可视
     var nodes = graph.nodes;
     var edges = graph.edges;
 
-    var width = 1000;
+    var width = 900;
     var height = 550;
 
 

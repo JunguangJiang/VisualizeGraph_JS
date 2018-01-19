@@ -6,7 +6,7 @@ function groupNumberInDifferentThreads(info, d3) {
 }
 
 function draw(info) {
-    var width = 1000;
+    var width = 900;
     var height = 550;
 
     var svg = d3.select("#graph")
