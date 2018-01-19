@@ -55,7 +55,7 @@ function visualizeShortestPath(graph,d3) {//将图graph上的最短路径可视�
                 case "source":
                 case "target":
                     return 4;
-                case "inpath":
+                case "inPath":
                     return 3;
                 default:
                     return 2;
